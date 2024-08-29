@@ -51,21 +51,23 @@ install_version() {
   local install_type="$1"
   local version="$2"
   local install_path="${3%/bin}/bin"
+  local install_root_path="$3"
 
   if [ "$install_type" != "version" ]; then
     fail "asdf-$TOOL_NAME supports release installs only"
   fi
 
   (
-    mkdir -p "$install_path"
-    cp -r "$ASDF_DOWNLOAD_PATH"/* "$install_path"
 
     # TODO: Assert angular executable exists.
     local tool_cmd
     tool_cmd="$(echo "$TOOL_TEST" | cut -d' ' -f1)"
-    npm install --prefix "$install_path" "@angular/cli@$version"
+   
+    mkdir -p "$install_root_path"
+    npm install --prefix "$install_root_path" "@angular/cli@$version"
+    ln -s "$install_root_path"/node_modules/.bin "$install_path"
+    
     test -x "$install_path/$tool_cmd" || fail "Expected $install_path/$tool_cmd to be executable."
-
     echo "$TOOL_NAME $version installation was successful!"
   ) || (
     rm -rf "$install_path"
